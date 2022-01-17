@@ -1,1 +1,16 @@
-<p>eventos works!</p>
+<h1>Evento Components</h1>
+
+
+<div *ngFor="let evento of eventos">
+<p>ID do evento:<b>{{evento.eventoId}}</b></p>
+  <p>Tema: <b>{{evento.tema}}</b></p>
+
+  <p>Local:<b>{{evento.local}}</b></p>
+
+  <p>Data:<b>{{evento.dataEvento}}</b></p>
+
+  <p>Qtd de pessoas:<b>{{evento.qtdPessoas}}</b></p>
+
+  <p>Lote:<b>{{evento.lote}}</b></p>
+  <hr>
+</div>
