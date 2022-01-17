@@ -2,8 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using ProEventos.API.Data;
 using ProEventos.API.Models;
 
 namespace ProEventos.API.Controllers
@@ -12,58 +15,57 @@ namespace ProEventos.API.Controllers
     [Route("api/[controller]")]
     public class EventoController : ControllerBase
     {
-        
-        public EventoController()
+        private readonly DataContext _context;
+        public EventoController(DataContext context)
         {
-
+            _context = context;
         }
-        public IEnumerable<Evento> evento = new Evento[]{
-             new Evento(){
-                    EventoId =1,
-                Tema = "Angular e .NET5",
-                Local = "Belo Horizonte",
-                Lote = "1º Lote",
-                QtdPessoas = 250,
-                DataEvento = DateTime.Now.AddDays(2).ToString("dd/MM/yyyy"),
-                ImagemUrl = "Foto.png"
-               },
-                new Evento(){
-                    EventoId =2,
-                Tema = "Angular e sua novidades",
-                Local = "São Paulo",
-                Lote = "2º Lote",
-                QtdPessoas = 300,
-                DataEvento = DateTime.Now.AddHours(2).ToString("dd/MM/yyyy"),
-                ImagemUrl = "Foto2.png"
-               }
-        };
+       
 
 
 
 
         [HttpGet]
-        public IEnumerable<Evento> Get()
+        public async Task<IEnumerable<Evento>> Get()
         {
-            return evento;
+            return await _context.Eventos.AsNoTracking().ToListAsync();
         }
         [HttpGet("{id}")]
-        public Evento GetById(int id){
-            return  evento.FirstOrDefault(x=> x.EventoId == id);
-          
-               
-          
+        public async Task<Evento> GetById(int id)
+        {
+            return await _context.Eventos.FirstOrDefaultAsync(x => x.EventoId == id);
+
+
+
         }
         [HttpPost]
-        public string Post(){
-            return "Exemplo post";
+        public async Task<ActionResult<Evento>> Post(Evento evento)
+        {
+            _context.Eventos.Add(evento);
+            await _context.SaveChangesAsync();
+            return Ok("Evento adicionado com sucesso");
         }
         [HttpPut("{id}")]
-        public string Put(int id){
-            return $"Exemplo de Put com id = {id}";
+        public async Task<ActionResult<Evento>> Put(int id,Evento evento)
+        {
+            if(id != evento.EventoId){
+                return BadRequest("Evento id não encontrado!");
+            }
+           // Evento ev = await GetById(id); 
+            _context.Entry(evento).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return Ok("Dados adicionados com sucesso");
         }
         [HttpDelete("{id}")]
-        public string Delete(int id){
-            return $"Exemplo de delete com id={id}";
+            public async Task<ActionResult<Evento>> Delete(int id)
+        {
+            Evento ev = await GetById(id);
+            if(ev is null){
+                return NotFound("Evento não encontrado");
+            }
+            _context.Eventos.Remove(ev);
+            await _context.SaveChangesAsync();
+            return Ok($"Evento removido com sucesso. Nº Id evento: {id}");
         }
     }
 }
